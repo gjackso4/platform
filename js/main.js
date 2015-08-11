@@ -10,6 +10,8 @@ var GameState = {
 		this.cursors = this.game.input.keyboard.createCursorKeys();
 		this.RUNNING_SPEED = 180;
 		this.JUMPING_SPEED = 550;
+
+		this.game.world.setBounds(0,0,360,700);
 	},
 	preload: function() {
 		this.load.image('ground', 'assets/images/ground.png');
@@ -23,31 +25,49 @@ var GameState = {
 		this.load.spritesheet('fire', 'assets/images/fire_spritesheet.png', 20, 21, 2, 1, 1);
 	},
 	create: function() {
-		this.ground = this.add.sprite(0, 500 , 'ground');
+		this.ground = this.add.sprite(0, 638 , 'ground');
 		this.game.physics.arcade.enable(this.ground);
 		this.ground.body.allowGravity = false;
 		this.ground.body.immovable = true;
 
 
-		this.platform = this.add.sprite(0, 300, 'platform');
-		this.game.physics.arcade.enable(this.platform);
-		this.platform.body.allowGravity = false;
-		this.platform.body.immovable = true;
+		// this.platform = this.add.sprite(0, 300, 'platform');
+		// this.game.physics.arcade.enable(this.platform);
+		// this.platform.body.allowGravity = false;
+		// this.platform.body.immovable = true;
 
-		this.player = this.add.sprite(100, 200, 'player', 3);
+		var platformData = [
+	      {"x": 0, "y": 430},
+	      {"x": 45, "y": 560},
+	      {"x": 90, "y": 290},
+	      {"x": 0, "y": 140}
+		];
+
+		this.platforms = this.add.group();
+		this.platforms.enableBody = true;
+
+		platformData.forEach(function(element){
+			this.platforms.create(element.x, element.y, 'platform');
+		}, this);
+
+		this.platforms.setAll('body.immovable', true);
+		this.platforms.setAll('body.allowGravity', false);
+
+
+		this.player = this.add.sprite(10, 545, 'player', 3);
 		this.player.anchor.setTo(0.5);
 		this.player.animations.add('walking', [0, 1, 2, 1], 6, true);
 		this.game.physics.arcade.enable(this.player);
 		this.player.customParams = {};
 
+		this.game.camera.follow(this.player);
+
 		this.createOnscreenControls();
-
-
 
 	}, 
 	update: function() {
 		this.game.physics.arcade.collide(this.player, this.ground, this.landed);
-		this.game.physics.arcade.collide(this.player, this.platform, this.landed);
+		this.game.physics.arcade.collide(this.player, this.platforms, this.landed);
 
 		// PRO TIP - Overlap is to check for overlaping without effecting physics
 		// this.game.physics.arcade.overlap(this.player, this.platform, this.landed);
@@ -80,6 +100,10 @@ var GameState = {
 		this.leftArrow.alpha = 0.5;
 		this.rightArrow.alpha = 0.5;
 		this.actionButton.alpha = 0.5;
+
+		this.leftArrow.fixedToCamera = true;
+		this.rightArrow.fixedToCamera = true;
+		this.actionButton.fixedToCamera = true;
 
 		this.actionButton.events.onInputDown.add(function(){
 			this.player.customParams.mustJump = true;
