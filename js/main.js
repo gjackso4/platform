@@ -6,6 +6,10 @@ var GameState = {
 
 		this.game.physics.startSystem(Phaser.Physics.ARCADE);
 		this.game.physics.arcade.gravity.y = 1000;
+
+		this.cursors = this.game.input.keyboard.createCursorKeys();
+		this.RUNNING_SPEED = 180;
+		this.JUMPING_SPEED = 550;
 	},
 	preload: function() {
 		this.load.image('ground', 'assets/images/ground.png');
@@ -21,21 +25,46 @@ var GameState = {
 	create: function() {
 		this.ground = this.add.sprite(0, 500 , 'ground');
 		this.game.physics.arcade.enable(this.ground);
+		this.ground.body.allowGravity = false;
+		this.ground.body.immovable = true;
 
 
-		var platform = this.add.sprite(0, 300, 'platform');
-		this.game.physics.arcade.enable(platform);
-
+		this.platform = this.add.sprite(0, 300, 'platform');
+		this.game.physics.arcade.enable(this.platform);
+		this.platform.body.allowGravity = false;
+		this.platform.body.immovable = true;
 
 		this.player = this.add.sprite(100, 200, 'player', 3);
 		this.player.anchor.setTo(0.5);
 		this.player.animations.add('walking', [0, 1, 2, 1], 6, true);
-		this.player.play('walking');
+		// this.player.play('walking');
 		this.game.physics.arcade.enable(this.player);
 
 
 	}, 
 	update: function() {
+		this.game.physics.arcade.collide(this.player, this.ground, this.landed);
+		this.game.physics.arcade.collide(this.player, this.platform, this.landed);
+
+		// PRO TIP - Overlap is to check for overlaping without effecting physics
+		// this.game.physics.arcade.overlap(this.player, this.platform, this.landed);
+
+		this.player.body.velocity.x = 0;
+
+		if(this.cursors.left.isDown) {
+			this.player.body.velocity.x = -this.RUNNING_SPEED;	
+		}
+		else if(this.cursors.right.isDown) {
+			this.player.body.velocity.x = this.RUNNING_SPEED;	
+		}
+
+		if(this.cursors.up.isDown && this.player.body.touching.down) {
+			this.player.body.velocity.y = -this.JUMPING_SPEED;	
+		}
+
+	},
+	landed: function(player, ground) {
+		//console.log("landed");
 
 	}
 };
