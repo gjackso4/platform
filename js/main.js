@@ -60,6 +60,7 @@ var GameState = {
 		this.game.physics.arcade.enable(this.player);
 		this.player.customParams = {};
 
+		//Camera follow player
 		this.game.camera.follow(this.player);
 
 		this.createOnscreenControls();
