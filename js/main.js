@@ -37,8 +37,11 @@ var GameState = {
 		this.player = this.add.sprite(100, 200, 'player', 3);
 		this.player.anchor.setTo(0.5);
 		this.player.animations.add('walking', [0, 1, 2, 1], 6, true);
-		// this.player.play('walking');
 		this.game.physics.arcade.enable(this.player);
+		this.player.customParams = {};
+
+		this.createOnscreenControls();
+
 
 
 	}, 
@@ -51,20 +54,73 @@ var GameState = {
 
 		this.player.body.velocity.x = 0;
 
-		if(this.cursors.left.isDown) {
+		if(this.cursors.left.isDown || this.player.customParams.isMovingLeft) {
 			this.player.body.velocity.x = -this.RUNNING_SPEED;	
 		}
-		else if(this.cursors.right.isDown) {
+		else if(this.cursors.right.isDown || this.player.customParams.isMovingRight) {
 			this.player.body.velocity.x = this.RUNNING_SPEED;	
 		}
 
-		if(this.cursors.up.isDown && this.player.body.touching.down) {
-			this.player.body.velocity.y = -this.JUMPING_SPEED;	
+		// Checking if up key is pressed & if you're touching the ground
+		if((this.cursors.up.isDown || this.player.customParams.mustJump) && this.player.body.touching.down) {
+			this.player.body.velocity.y = -this.JUMPING_SPEED;
+			this.player.customParams.mustJump = false;
 		}
 
 	},
 	landed: function(player, ground) {
 		//console.log("landed");
+
+	},
+	createOnscreenControls: function() {
+		this.leftArrow = this.add.button(20, 535, 'arrowButton');
+		this.rightArrow = this.add.button(110, 535, 'arrowButton');
+		this.actionButton = this.add.button(280, 535, 'actionButton');
+
+		this.leftArrow.alpha = 0.5;
+		this.rightArrow.alpha = 0.5;
+		this.actionButton.alpha = 0.5;
+
+		this.actionButton.events.onInputDown.add(function(){
+			this.player.customParams.mustJump = true;
+		}, this);
+		this.actionButton.events.onInputUp.add(function(){
+			this.player.customParams.mustJump = false;
+		}, this);
+
+		//left
+		this.leftArrow.events.onInputDown.add(function(){
+			this.player.customParams.isMovingLeft = true;
+		}, this);
+		this.leftArrow.events.onInputUp.add(function(){
+			this.player.customParams.isMovingLeft = false;
+		}, this);
+
+		//fix for mobile not firing onInputDown / Up
+		this.leftArrow.events.onInputOver.add(function(){
+			this.player.customParams.isMovingLeft = true;
+		}, this);
+		this.leftArrow.events.onInputOut.add(function(){
+			this.player.customParams.isMovingLeft = false;
+		}, this);
+
+
+		//right
+		this.rightArrow.events.onInputDown.add(function(){
+			this.player.customParams.isMovingRight = true;
+		}, this);
+		this.rightArrow.events.onInputUp.add(function(){
+			this.player.customParams.isMovingRight = false;
+		}, this);
+
+		//fix for mobile not firing onInputDown / Up
+		this.rightArrow.events.onInputOver.add(function(){
+			this.player.customParams.isMovingRight = true;
+		}, this);
+		this.rightArrow.events.onInputOut.add(function(){
+			this.player.customParams.isMovingRight = false;
+		}, this);
+
 
 	}
 };
